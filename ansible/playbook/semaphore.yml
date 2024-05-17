@@ -1,1 +1,29 @@
+---
+- name: Déploiement de Semaphore
+  hosts: semaphore
+  become: true
+  tasks:
+    - name: Mise à jour du cache apt et installation des dépendances
+      apt:
+        update_cache: yes
+        name: "{{ item }}"
+      loop:
+        - docker.io
+        - docker-compose
+        - git
 
+    - name: Cloner le référentiel Semaphore depuis GitHub
+      git:
+        repo: https://github.com/ansible-semaphore/semaphore.git
+        dest: /opt/semaphore
+        version: master
+
+    - name: Copier le fichier de configuration de Semaphore
+      copy:
+        src: /chemin/vers/votre/fichier/semaphore_config.json
+        dest: /opt/semaphore/config.json
+
+    - name: Démarrer le conteneur Docker de Semaphore
+      command: docker-compose up -d
+      args:
+        chdir: /opt/semaphore
